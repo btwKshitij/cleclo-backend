@@ -1,0 +1,48 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Order {
+  id            String      @id @default(uuid())
+  userId        String
+  vendorId      String?     // Assigned vendor
+  riderId       String?     // Assigned rider for pickup/delivery
+  status        String      @default("pending") // pending, pickup_assigned, picked_up, processing, out_for_delivery, delivered, cancelled
+  totalAmount   Float
+  pickupTime    DateTime
+  deliveryTime  DateTime
+  serviceType   String      @default("Standard") // Standard, Express 48h, Express 24h
+  paymentStatus String      @default("pending")
+  gstNumber     String?     // Optional GST
+  hasIssue      Boolean     @default(false)
+  issueType     String?     // damage, customer_no_show, item_missing, delayed
+  issueNote     String?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  items         OrderItem[]
+}
+
+model OrderItem {
+  id            String    @id @default(uuid())
+  orderId       String
+  order         Order     @relation(fields: [orderId], references: [id])
+  itemId        String
+  quantity      Int
+  condition     String?   // "Damage", "Stain", "None"
+  riderVerified Boolean   @default(false)
+  vendorVerified Boolean  @default(false)
+  discrepancy   String?   // Notes from rider/vendor
+  images        OrderImage[]
+}
+
+model OrderImage {
+  id          String    @id @default(uuid())
+  orderItemId String
+  orderItem   OrderItem @relation(fields: [orderItemId], references: [id])
+  imageUrl    String
+}

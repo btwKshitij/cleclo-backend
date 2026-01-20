@@ -1,0 +1,14 @@
+{
+  "name": "cleclo-backend",
+  "version": "1.0.0",
+  "description": "Microservices backend for Cleclo",
+  "scripts": {
+    "start:gateway": "cd backend/gateway && npm start",
+    "start:auth": "cd backend/services/auth-service && npm start",
+    "start:catalog": "cd backend/services/catalog-service && npm start",
+    "start:order": "cd backend/services/order-service && npm start"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

@@ -1,0 +1,131 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String    @id @default(uuid())
+  name      String
+  email     String    @unique
+  phone     String    @unique
+  password  String
+  role      String    @default("customer") // customer, rider, vendor, admin
+  status    String    @default("active")   // active, blocked, suspended
+  userType  String    @default("regular")  // regular, vip, top_spender, new
+  isVerified Boolean  @default(false)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  addresses Address[]
+  outlets   Outlet[]
+  vendorProfile VendorProfile?
+  wallet    Wallet?
+  settlements VendorSettlement[]
+  createdTickets SupportTicket[] @relation("TicketCreator")
+  receivedTickets SupportTicket[] @relation("TicketTarget")
+}
+
+model Address {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  addressLine String
+  lat         Float?
+  lng         Float?
+  type        String   @default("home") // home, work, other
+}
+
+model Outlet {
+  id        String   @id @default(uuid())
+  vendorId  String
+  vendor    User     @relation(fields: [vendorId], references: [id])
+  name      String
+  address   String
+  lat       Float
+  lng       Float
+  operatingHours String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model VendorProfile {
+  id              String  @id @default(uuid())
+  userId          String  @unique
+  user            User    @relation(fields: [userId], references: [id])
+  businessName    String
+  gstRegistered   Boolean @default(false)
+  gstNumber       String?
+  businessType    String? // Sole Proprietorship, LLP, etc
+  servicesOffered String? // Comma separated: Dry Clean, Wash Only, Iron
+  dailyCapacity   Int?
+  bankHolderName  String?
+  bankName        String?
+  accountNumber   String?
+  ifscCode        String?
+  businessProofUrl String?
+  ownerIdProofUrl  String?
+  termsAccepted   Boolean @default(false)
+  slaAccepted     Boolean @default(false)
+  isApproved      Boolean @default(false) // Admin approval
+}
+
+// Wallet System
+model Wallet {
+  id           String   @id @default(uuid())
+  userId       String   @unique
+  user         User     @relation(fields: [userId], references: [id])
+  balance      Float    @default(0)
+  transactions WalletTransaction[]
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model WalletTransaction {
+  id        String   @id @default(uuid())
+  walletId  String
+  wallet    Wallet   @relation(fields: [walletId], references: [id])
+  amount    Float
+  type      String   // credit, debit
+  note      String?
+  createdAt DateTime @default(now())
+}
+
+// Vendor Settlements/Payouts
+model VendorSettlement {
+  id        String    @id @default(uuid())
+  vendorId  String
+  vendor    User      @relation(fields: [vendorId], references: [id])
+  amount    Float
+  status    String    @default("pending") // pending, paid
+  note      String?
+  paidAt    DateTime?
+  createdAt DateTime  @default(now())
+}
+
+  settlements VendorSettlement[]
+  createdTickets SupportTicket[] @relation("TicketCreator")
+  receivedTickets SupportTicket[] @relation("TicketTarget")
+}
+
+// ... (keep matches for context if needed, but easier to target file end for SupportTicket)
+
+// Support System
+model SupportTicket {
+  id          String    @id @default(uuid())
+  userId      String    // Creator
+  user        User      @relation("TicketCreator", fields: [userId], references: [id])
+  targetId    String?   // If null, for Admin. If set, for specific Vendor
+  target      User?     @relation("TicketTarget", fields: [targetId], references: [id])
+  subject     String
+  category    String    // orders, payments, account, technical
+  message     String
+  priority    String    @default("medium") // low, medium, high
+  status      String    @default("open")   // open, in_progress, resolved, closed
+  isEscalated Boolean   @default(false)    // True if escalated to admin
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  resolvedAt  DateTime?
+}
