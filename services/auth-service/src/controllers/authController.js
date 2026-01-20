@@ -81,13 +81,6 @@ const verifyOtp = async (req, res) => {
     }
 };
 
-module.exports = {
-    signup,
-    login,
-    verifyOtp,
-    registerVendor
-};
-
 const registerVendor = async (req, res) => {
     try {
         const {
@@ -159,4 +152,11 @@ const registerVendor = async (req, res) => {
         console.error(error);
         res.status(500).json({ message: 'Internal Server Error', error: error.message });
     }
+};
+
+module.exports = {
+    signup,
+    login,
+    verifyOtp,
+    registerVendor
 };

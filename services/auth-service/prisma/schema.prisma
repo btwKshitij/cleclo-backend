@@ -105,10 +105,7 @@ model VendorSettlement {
   createdAt DateTime  @default(now())
 }
 
-  settlements VendorSettlement[]
-  createdTickets SupportTicket[] @relation("TicketCreator")
-  receivedTickets SupportTicket[] @relation("TicketTarget")
-}
+
 
 // ... (keep matches for context if needed, but easier to target file end for SupportTicket)
 
