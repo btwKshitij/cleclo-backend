@@ -4,11 +4,11 @@ This document provides a detailed reference for all backend APIs.
 
 ## 🏗️ Services Overview
 
-| Service | Port | Base URL |
-|---------|------|----------|
-| **Auth Service** | 3001 | `http://localhost:3001` |
+| Service             | Port | Base URL                |
+| ------------------- | ---- | ----------------------- |
+| **Auth Service**    | 3001 | `http://localhost:3001` |
 | **Catalog Service** | 3002 | `http://localhost:3002` |
-| **Order Service** | 3003 | `http://localhost:3003` |
+| **Order Service**   | 3003 | `http://localhost:3003` |
 
 ---
 
@@ -17,9 +17,11 @@ This document provides a detailed reference for all backend APIs.
 ## Public Config & Auth
 
 ### 1. Signup (Customer)
+
 - **Endpoint**: `POST /auth/signup`
 - **Description**: Register a new customer account.
 - **Request Body**:
+
 ```json
 {
   "name": "Jane Doe",
@@ -31,7 +33,9 @@ This document provides a detailed reference for all backend APIs.
   "lng": 77.5946
 }
 ```
+
 - **Response**:
+
 ```json
 {
   "message": "User created successfully",
@@ -41,15 +45,19 @@ This document provides a detailed reference for all backend APIs.
 ```
 
 ### 2. Login
+
 - **Endpoint**: `POST /auth/login`
 - **Request Body**:
+
 ```json
 {
-  "email": "jane@example.com", 
+  "email": "jane@example.com",
   "password": "securepassword"
 }
 ```
+
 - **Response**:
+
 ```json
 {
   "message": "Login successful",
@@ -59,8 +67,10 @@ This document provides a detailed reference for all backend APIs.
 ```
 
 ### 3. Vendor Registration
+
 - **Endpoint**: `POST /auth/vendor/register`
 - **Request Body**:
+
 ```json
 {
   "name": "Vendor Name",
@@ -86,7 +96,9 @@ This document provides a detailed reference for all backend APIs.
   "slaAccepted": true
 }
 ```
+
 - **Response**:
+
 ```json
 {
   "message": "Vendor registered successfully",
@@ -97,22 +109,27 @@ This document provides a detailed reference for all backend APIs.
 ---
 
 ## 🛠️ Admin APIs
+
 **Base Path**: `/admin`
 
 ### User Management
 
 #### Get All Users
+
 - **Endpoint**: `GET /admin/users`
 - **Query Params**: `?role=vendor` | `?status=active` | `?userType=vip`
 - **Response**: `[ { "id": "...", "name": "...", "wallet": {...} }, ... ]`
 
 #### Get User Details
+
 - **Endpoint**: `GET /admin/users/:id`
 - **Response**: User object with wallet, addresses, and vendorProfile (if vendor).
 
 #### Update User
+
 - **Endpoint**: `PUT /admin/users/:id`
 - **Request Body**:
+
 ```json
 {
   "name": "New Name",
@@ -123,47 +140,57 @@ This document provides a detailed reference for all backend APIs.
 ```
 
 #### Block/Unblock User
+
 - **Endpoint**: `PATCH /admin/users/:id/block`
 - **Request Body**: `{ "blocked": true }` or `{ "blocked": false }`
 
 #### Get User Wallet
+
 - **Endpoint**: `GET /admin/users/:id/wallet`
 - **Response**: `{ "id": "...", "balance": 500, "transactions": [...] }`
 
 #### Adjust User Wallet
+
 - **Endpoint**: `POST /admin/users/:id/wallet`
 - **Request Body**:
+
 ```json
 {
   "amount": 100,
-  "type": "credit", 
+  "type": "credit",
   "note": "Refund for order #123"
 }
 ```
-*Type can be 'credit' or 'debit'.*
+
+_Type can be 'credit' or 'debit'._
 
 ---
 
 ### Vendor Management
 
 #### Get All Vendors
+
 - **Endpoint**: `GET /admin/vendors`
 - **Query Params**: `?status=active`
 - **Response**: List of users with `role: vendor`.
 
 #### Get Pending Vendors
+
 - **Endpoint**: `GET /admin/vendors/pending`
 - **Response**: List of vendors with `isApproved: false`.
 
 #### Approve Vendor
+
 - **Endpoint**: `PATCH /admin/vendors/:id/approve`
 - **Request Body**: `{ "isApproved": true }`
 
 #### Suspend Vendor
+
 - **Endpoint**: `PATCH /admin/vendors/:id/suspend`
 - **Request Body**: `{ "suspended": true }`
 
 #### Get Vendor Payouts
+
 - **Endpoint**: `GET /admin/vendors/:id/payouts`
 - **Response**: List of settlement records.
 
@@ -172,12 +199,15 @@ This document provides a detailed reference for all backend APIs.
 ### Finance & Settlements
 
 #### Get All Settlements
+
 - **Endpoint**: `GET /admin/settlements`
 - **Query Params**: `?status=pending` | `?vendorId=...`
 
 #### Create Settlement (Payout)
+
 - **Endpoint**: `POST /admin/settlements`
 - **Request Body**:
+
 ```json
 {
   "vendorId": "uuid...",
@@ -187,12 +217,15 @@ This document provides a detailed reference for all backend APIs.
 ```
 
 #### Mark Settlement as Paid
+
 - **Endpoint**: `PATCH /admin/settlements/:id/paid`
 - **Response**: Settlement object with `status: 'paid'`.
 
 #### Get Settlement Stats
+
 - **Endpoint**: `GET /admin/settlements/stats`
 - **Response**:
+
 ```json
 {
   "pending": { "count": 5, "amount": 25000 },
@@ -203,12 +236,15 @@ This document provides a detailed reference for all backend APIs.
 ---
 
 ## 📊 Vendor Dashboard APIs
+
 **Base Path**: `/vendor`
 
 ### Dashboard Stats
+
 - **Endpoint**: `GET /vendor/dashboard/stats`
 - **Query**: `?vendorId=...`
 - **Response**:
+
 ```json
 {
   "businessName": "My Laundry",
@@ -220,51 +256,62 @@ This document provides a detailed reference for all backend APIs.
 ```
 
 ### Earnings History
+
 - **Endpoint**: `GET /vendor/earnings`
 - **Query**: `?vendorId=...`, `?startDate=2024-01-01`, `?endDate=2024-01-31`
 - **Response**: `{ "earnings": [...], "summary": { "paid": { "amount": 1000 }, "pending": { "amount": 500 } } }`
 
 ### Schedule (Operating Hours)
+
 - **Endpoint**: `GET /vendor/schedule?vendorId=...`
 - **Response**: `[ { "outletId": "...", "operatingHours": "09:00-21:00" } ]`
 
 #### Update Schedule
+
 - **Endpoint**: `PUT /vendor/schedule`
 - **Request Body**: `{ "outletId": "...", "operatingHours": "10:00-20:00" }`
 
 ### Services & Capacity
+
 - **Update Services**: `PUT /vendor/services` -> `{ "vendorId": "...", "servicesOffered": "Wash, Iron" }`
 - **Update Capacity**: `PUT /vendor/capacity` -> `{ "vendorId": "...", "dailyCapacity": 50 }`
 
 ---
 
 ## 🎫 Support Ticket APIs
+
 **Base Path**: `/tickets`
 
 ### Create Ticket
+
 - **Endpoint**: `POST /tickets`
 - **Request Body**:
+
 ```json
 {
   "userId": "uuid-of-creator",
   "subject": "Missing Payment",
   "message": "I did not receive payout #123",
   "category": "payments",
-  "targetId": "uuid-of-vendor" 
+  "targetId": "uuid-of-vendor"
 }
 ```
-*`targetId` is optional. If missing, ticket goes to Admin. If present, ticket goes to that specific Vendor.*
+
+_`targetId` is optional. If missing, ticket goes to Admin. If present, ticket goes to that specific Vendor._
 
 ### Get My Tickets
+
 - **Endpoint**: `GET /tickets/my-tickets`
 - **Query**: `?userId=...` & `?role=vendor` (optional)
 - **Note**: If role=vendor, returns tickets created BY vendor AND tickets assigned TO vendor.
 
 ### Admin: Get All Tickets
+
 - **Endpoint**: `GET /tickets/admin/all`
 - **Query**: `?status=open`, `?isEscalated=true`
 
 ### Update Ticket Status
+
 - **Endpoint**: `PATCH /tickets/:id/status`
 - **Request Body**: `{ "status": "resolved", "isEscalated": true }`
 
@@ -275,25 +322,34 @@ This document provides a detailed reference for all backend APIs.
 ## Public Order APIs
 
 ### Create Order
+
 - **Endpoint**: `POST /orders`
 - **Request Body**:
+
 ```json
 {
   "userId": "uuid...",
   "pickupTime": "2024-03-20T10:00:00Z",
   "serviceType": "standard",
   "items": [
-    { "itemId": "uuid...", "quantity": 2, "condition": "good", "images": ["url1"] }
+    {
+      "itemId": "uuid...",
+      "quantity": 2,
+      "condition": "good",
+      "images": ["url1"]
+    }
   ]
 }
 ```
 
 ### Check Price/Estimated Time
+
 - **Endpoint**: `POST /orders/price-check`
 - **Request Body**: `{ "pickupTime": "...", "serviceType": "express" }`
 - **Response**: `{ "deliveryDate": "...", "multiplier": 1.5 }`
 
 ### Upload Order Image
+
 - **Endpoint**: `POST /orders/upload`
 - **Data**: Multipart Form Data (`image` file field)
 - **Response**: `{ "imageUrl": "/uploads/filename.jpg" }`
@@ -301,42 +357,52 @@ This document provides a detailed reference for all backend APIs.
 ---
 
 ## 🛠️ Admin Order APIs
+
 **Base Path**: `/admin/orders`
 
 ### Get All Orders
+
 - **Endpoint**: `GET /admin/orders`
 - **Query**: `?status=pending`, `?vendorId=...`, `?hasIssue=true`
 
 ### Assign Vendor / Rider
+
 - **Assign Vendor**: `PATCH /admin/orders/:id/assign-vendor` -> `{ "vendorId": "..." }`
 - **Assign Rider**: `PATCH /admin/orders/:id/assign-rider` -> `{ "riderId": "..." }`
 
 ### Update Status
+
 - **Endpoint**: `PATCH /admin/orders/:id/status`
 - **Request Body**: `{ "status": "processing" }`
 
 ### Issue Management
+
 - **Report**: `POST /admin/orders/:id/issue` -> `{ "issueType": "damaged", "issueNote": "Button broken" }`
 - **Resolve**: `PATCH /admin/orders/:id/resolve-issue`
 
 ### Dashboard Stats
+
 - **Endpoint**: `GET /admin/orders/dashboard/stats`
 - **Response**: `{ "totalOrders": 100, "todayOrders": 5, "revenue": 5000, ... }`
 
 ---
 
 ## 🚚 Vendor Order APIs
+
 **Base Path**: `/vendor/orders`
 
 ### Get My Orders
+
 - **Endpoint**: `GET /vendor/orders`
 - **Query**: `?vendorId=...`, `?status=pending`
 
 ### Vendor Stats
+
 - **Endpoint**: `GET /vendor/orders/stats?vendorId=...`
 - **Response**: `{ "completionRate": 95, "earnings": 2000, "pendingOrders": 2 }`
 
 ### Order Actions
+
 - **Accept**: `PATCH /vendor/orders/:id/accept`
 - **Ready for Delivery**: `PATCH /vendor/orders/:id/ready`
 - **Update Progress**: `PATCH /vendor/orders/:id/status` -> `{ "status": "cleaning" }`
@@ -346,24 +412,29 @@ This document provides a detailed reference for all backend APIs.
 # 📚 Catalog Service (Port 3002)
 
 ## Public Catalog
+
 - **Endpoint**: `GET /catalog/services`
 - **Response**: Returns full hierarchy: Services -> Categories -> Items.
 
 ## 🛠️ Admin Catalog APIs
+
 **Base Path**: `/admin`
 
 ### Services
+
 - `GET /admin/services`
 - `POST /admin/services` -> `{ "name": "Dry Clean" }`
 - `PUT /admin/services/:id` -> `{ "name": "New Name" }`
 - `DELETE /admin/services/:id`
 
 ### Categories
+
 - `GET /admin/categories?serviceId=...`
 - `POST /admin/categories` -> `{ "serviceId": "...", "name": "Men", "order": 1 }`
 - `PATCH /admin/categories/reorder` -> Body: `{ "categories": [{ "id": "1", "order": 2 }, { "id": "2", "order": 1 }] }`
 
 ### Items
+
 - `GET /admin/items?categoryId=...`
 - `POST /admin/items` -> `{ "categoryId": "...", "name": "Shirt", "basePrice": 50, "imageUrl": "..." }`
 - `PUT /admin/items/:id` -> `{ "basePrice": 60 }`

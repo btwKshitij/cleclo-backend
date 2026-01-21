@@ -63,6 +63,12 @@ const updateUser = async (req, res) => {
         });
         res.json({ message: 'User updated', user });
     } catch (error) {
+        // Check for unique constraint violation
+        if (error.code === 'P2002') {
+            return res.status(400).json({ 
+                error: 'This phone number or email is already registered to another user.' 
+            });
+        }
         res.status(500).json({ error: error.message });
     }
 };
