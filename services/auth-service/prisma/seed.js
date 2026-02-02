@@ -1,0 +1,343 @@
+const { PrismaClient } = require('@prisma/client');
+const bcrypt = require('bcryptjs');
+
+const prisma = new PrismaClient();
+
+async function main() {
+    console.log('🌱 Seeding Auth Service database...');
+
+    // Hash password for all users
+    const hashedPassword = await bcrypt.hash('password123', 10);
+
+    // 1. Create Admin User
+    const admin = await prisma.user.create({
+        data: {
+            name: 'Admin User',
+            email: 'admin@cleclo.com',
+            phone: '9999999999',
+            password: hashedPassword,
+            role: 'admin',
+            status: 'active',
+            userType: 'regular',
+            isVerified: true,
+            addresses: {
+                create: [
+                    {
+                        addressLine: '123 Admin Street, Mumbai',
+                        lat: 19.0760,
+                        lng: 72.8777,
+                        type: 'work',
+                    },
+                ],
+            },
+            wallet: {
+                create: {
+                    balance: 10000,
+                },
+            },
+        },
+    });
+
+    // 2. Create Regular Customers (10 customers)
+    const customers = [];
+    const customerNames = [
+        { name: 'Ravindra Kumar', email: 'ravindra@example.com', phone: '9876543210', type: 'vip' },
+        { name: 'Priya Sharma', email: 'priya@example.com', phone: '9876543211', type: 'regular' },
+        { name: 'Amit Patel', email: 'amit@example.com', phone: '9876543212', type: 'top_spender' },
+        { name: 'Sneha Reddy', email: 'sneha@example.com', phone: '9876543213', type: 'regular' },
+        { name: 'Rajesh Singh', email: 'rajesh@example.com', phone: '9876543214', type: 'new' },
+        { name: 'Kavita Desai', email: 'kavita@example.com', phone: '9876543215', type: 'regular' },
+        { name: 'Vikas Gupta', email: 'vikas@example.com', phone: '9876543216', type: 'vip' },
+        { name: 'Anjali Mehta', email: 'anjali@example.com', phone: '9876543217', type: 'regular' },
+        { name: 'Suresh Iyer', email: 'suresh@example.com', phone: '9876543218', type: 'top_spender' },
+        { name: 'Neha Joshi', email: 'neha@example.com', phone: '9876543219', type: 'regular' },
+    ];
+
+    for (const customerData of customerNames) {
+        const customer = await prisma.user.create({
+            data: {
+                name: customerData.name,
+                email: customerData.email,
+                phone: customerData.phone,
+                password: hashedPassword,
+                role: 'customer',
+                status: 'active',
+                userType: customerData.type,
+                isVerified: true,
+                addresses: {
+                    create: [
+                        {
+                            addressLine: `${Math.floor(Math.random() * 999) + 1} Main Road, Mumbai`,
+                            lat: 19.0760 + (Math.random() - 0.5) * 0.1,
+                            lng: 72.8777 + (Math.random() - 0.5) * 0.1,
+                            type: 'home',
+                        },
+                        {
+                            addressLine: `${Math.floor(Math.random() * 999) + 1} Office Complex, Mumbai`,
+                            lat: 19.0760 + (Math.random() - 0.5) * 0.1,
+                            lng: 72.8777 + (Math.random() - 0.5) * 0.1,
+                            type: 'work',
+                        },
+                    ],
+                },
+                wallet: {
+                    create: {
+                        balance: Math.floor(Math.random() * 5000) + 500,
+                        transactions: {
+                            create: [
+                                {
+                                    amount: 1000,
+                                    type: 'credit',
+                                    note: 'Welcome bonus',
+                                },
+                                {
+                                    amount: 500,
+                                    type: 'debit',
+                                    note: 'Order payment #12345',
+                                },
+                            ],
+                        },
+                    },
+                },
+            },
+        });
+        customers.push(customer);
+    }
+
+    // 3. Create Vendors (5 vendors)
+    const vendorData = [
+        {
+            name: 'Vendor 1 - Mumbai Laundry',
+            email: 'vendor1@cleclo.com',
+            phone: '9111111111',
+            businessName: 'Mumbai Premium Laundry',
+            servicesOffered: 'Dry Clean, Wash Only, Iron',
+            dailyCapacity: 150,
+            isApproved: true,
+            lat: 19.0760,
+            lng: 72.8777,
+        },
+        {
+            name: 'Vendor 2 - Express Clean',
+            email: 'vendor2@cleclo.com',
+            phone: '9222222222',
+            businessName: 'Express Clean Services',
+            servicesOffered: 'Dry Clean, Wash Only',
+            dailyCapacity: 100,
+            isApproved: true,
+            lat: 19.1136,
+            lng: 72.8697,
+        },
+        {
+            name: 'Vendor 3 - Quick Wash',
+            email: 'vendor3@cleclo.com',
+            phone: '9333333333',
+            businessName: 'Quick Wash Pro',
+            servicesOffered: 'Wash Only, Iron',
+            dailyCapacity: 200,
+            isApproved: true,
+            lat: 19.0596,
+            lng: 72.8295,
+        },
+        {
+            name: 'Vendor 4 - Pending Approval',
+            email: 'vendor4@cleclo.com',
+            phone: '9444444444',
+            businessName: 'New Laundry Startup',
+            servicesOffered: 'Dry Clean, Wash Only, Iron',
+            dailyCapacity: 80,
+            isApproved: false,
+            lat: 19.0330,
+            lng: 72.8569,
+        },
+        {
+            name: 'Vendor 5 - Elite Dry Clean',
+            email: 'vendor5@cleclo.com',
+            phone: '9555555555',
+            businessName: 'Elite Dry Cleaners',
+            servicesOffered: 'Dry Clean',
+            dailyCapacity: 120,
+            isApproved: true,
+            lat: 19.0895,
+            lng: 72.8634,
+        },
+    ];
+
+    const vendors = [];
+    for (const vData of vendorData) {
+        const vendor = await prisma.user.create({
+            data: {
+                name: vData.name,
+                email: vData.email,
+                phone: vData.phone,
+                password: hashedPassword,
+                role: 'vendor',
+                status: 'active',
+                isVerified: true,
+                addresses: {
+                    create: [
+                        {
+                            addressLine: `${vData.businessName} HQ`,
+                            lat: vData.lat,
+                            lng: vData.lng,
+                            type: 'work',
+                        },
+                    ],
+                },
+                vendorProfile: {
+                    create: {
+                        businessName: vData.businessName,
+                        gstRegistered: true,
+                        gstNumber: `GST${Math.random().toString(36).substring(2, 15).toUpperCase()}`,
+                        businessType: 'LLP',
+                        servicesOffered: vData.servicesOffered,
+                        dailyCapacity: vData.dailyCapacity,
+                        bankHolderName: vData.name,
+                        bankName: 'HDFC Bank',
+                        accountNumber: `${Math.floor(Math.random() * 9000000000) + 1000000000}`,
+                        ifscCode: 'HDFC0001234',
+                        termsAccepted: true,
+                        slaAccepted: true,
+                        isApproved: vData.isApproved,
+                    },
+                },
+                outlets: {
+                    create: [
+                        {
+                            name: `${vData.businessName} - Main Branch`,
+                            address: `${Math.floor(Math.random() * 999) + 1} Commercial St, Mumbai`,
+                            lat: vData.lat,
+                            lng: vData.lng,
+                            operatingHours: '09:00-21:00',
+                        },
+                    ],
+                },
+                wallet: {
+                    create: {
+                        balance: Math.floor(Math.random() * 50000) + 10000,
+                    },
+                },
+            },
+        });
+        vendors.push(vendor);
+
+        // Create settlements for approved vendors
+        if (vData.isApproved) {
+            await prisma.vendorSettlement.createMany({
+                data: [
+                    {
+                        vendorId: vendor.id,
+                        amount: 5000,
+                        status: 'paid',
+                        note: 'Weekly payout - Week 1',
+                        paidAt: new Date('2026-01-25'),
+                    },
+                    {
+                        vendorId: vendor.id,
+                        amount: 7500,
+                        status: 'pending',
+                        note: 'Weekly payout - Week 2',
+                    },
+                ],
+            });
+        }
+    }
+
+    // 4. Create Riders (3 riders)
+    const riders = [];
+    const riderNames = [
+        { name: 'Rahul Rider', email: 'rahul.rider@cleclo.com', phone: '9811111111' },
+        { name: 'Arun Delivery', email: 'arun.delivery@cleclo.com', phone: '9822222222' },
+        { name: 'Deepak Driver', email: 'deepak.driver@cleclo.com', phone: '9833333333' },
+    ];
+
+    for (const riderData of riderNames) {
+        const rider = await prisma.user.create({
+            data: {
+                name: riderData.name,
+                email: riderData.email,
+                phone: riderData.phone,
+                password: hashedPassword,
+                role: 'rider',
+                status: 'active',
+                isVerified: true,
+                wallet: {
+                    create: {
+                        balance: Math.floor(Math.random() * 2000) + 500,
+                    },
+                },
+            },
+        });
+        riders.push(rider);
+    }
+
+    // 5. Create Support Tickets
+    await prisma.supportTicket.createMany({
+        data: [
+            {
+                userId: customers[0].id,
+                targetId: null, // Admin ticket
+                subject: 'Order delayed',
+                category: 'orders',
+                message: 'My order #12345 is delayed by 2 days. Please help.',
+                priority: 'high',
+                status: 'in_progress',
+            },
+            {
+                userId: customers[1].id,
+                targetId: vendors[0].id, // Vendor specific
+                subject: 'Item damaged',
+                category: 'orders',
+                message: 'My shirt was damaged during cleaning.',
+                priority: 'high',
+                status: 'open',
+            },
+            {
+                userId: vendors[0].id,
+                targetId: null, // Admin ticket
+                subject: 'Payment not received',
+                category: 'payments',
+                message: 'Settlement amount not credited to account.',
+                priority: 'medium',
+                status: 'resolved',
+                resolvedAt: new Date(),
+            },
+            {
+                userId: customers[2].id,
+                targetId: null,
+                subject: 'Account verification',
+                category: 'account',
+                message: 'Unable to verify my phone number.',
+                priority: 'low',
+                status: 'open',
+            },
+            {
+                userId: customers[3].id,
+                targetId: null,
+                subject: 'App not working',
+                category: 'technical',
+                message: 'App crashes when I try to upload photos.',
+                priority: 'medium',
+                status: 'open',
+                isEscalated: true,
+            },
+        ],
+    });
+
+    console.log('✅ Auth Service seeding completed!');
+    console.log(`   - Created 1 admin`);
+    console.log(`   - Created ${customers.length} customers`);
+    console.log(`   - Created ${vendors.length} vendors`);
+    console.log(`   - Created ${riders.length} riders`);
+    console.log(`   - Created 5 support tickets`);
+    console.log(`   - Default password for all users: password123`);
+}
+
+main()
+    .catch((e) => {
+        console.error(e);
+        process.exit(1);
+    })
+    .finally(async () => {
+        await prisma.$disconnect();
+    });
